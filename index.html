@@ -6,10 +6,11 @@
     <title>字体字形查看器</title>
     <style>
         /* ================== 字体定义区域 ================== */
-        @font-face { font-family: 'CustomP1'; src: url('TH-Tshyn-P0.ttf'); }
-        @font-face { font-family: 'CustomP2'; src: url('TH-Tshyn-P1.ttf'); }
-        @font-face { font-family: 'CustomP3'; src: url('TH-Tshyn-P2.ttf'); }
-        @font-face { font-family: 'CustomP4'; src: url('TH-Tshyn-P16.ttf'); }
+        @font-face { font-family: 'CustomP1'; src: url('TH-Times.ttc'); }
+        @font-face { font-family: 'CustomP2'; src: url('TH-Tshyn-P0.ttf'); }
+        @font-face { font-family: 'CustomP3'; src: url('TH-Tshyn-P1.ttf'); }
+        @font-face { font-family: 'CustomP4'; src: url('TH-Tshyn-P2.ttf'); }
+        @font-face { font-family: 'CustomP5'; src: url('TH-Tshyn-P16.ttf'); }
 
         /* ================== 全局样式 ================== */
         :root {
@@ -56,7 +57,7 @@
                1. 依次查找 P1, P2, P3, P4
                2. 如果都没找到，最后回退到 P1 (CustomP1)
             */
-            font-family: 'CustomP1', 'CustomP2', 'CustomP3', 'CustomP4', 'CustomP1';
+            font-family: 'CustomP1', 'CustomP2', 'CustomP3', 'CustomP4', 'CustomP5' 'CustomP2';
             
             transition: font-size 0.05s ease; /* 调整大小时平滑过渡 */
         }
