@@ -3,15 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>全字形查看器 (8字体版)</title>
+    <title>字体字形查看器</title>
     <style>
-        /* ================== 1. 新增的高优先级字体 ================== */
-        @font-face { font-family: 'PriorityF0'; src: url('fonts-0.ttf'); }
-        @font-face { font-family: 'PriorityF1'; src: url('fonts-1.ttf'); }
-        @font-face { font-family: 'PriorityF2'; src: url('fonts-2.ttf'); }
-        @font-face { font-family: 'PriorityF3'; src: url('fonts-3.ttf'); }
-
-        /* ================== 2. 原有的 P 系列字体 ================== */
+        /* ================== 字体定义区域 ================== */
         @font-face { font-family: 'CustomP1'; src: url('TH-Tshyn-P0.ttf'); }
         @font-face { font-family: 'CustomP2'; src: url('TH-Tshyn-P1.ttf'); }
         @font-face { font-family: 'CustomP3'; src: url('TH-Tshyn-P2.ttf'); }
@@ -19,12 +13,10 @@
 
         /* ================== 全局样式 ================== */
         :root {
-            /* 修改背景为纯白 */
             --bg-color: #ffffff;
             --panel-bg: #ffffff;
-            --text-color: #000000;
+            --text-color: #1c1c1e;
             --accent-color: #007aff;
-            --border-color: #e5e5e5;
         }
 
         * { box-sizing: border-box; }
@@ -37,137 +29,133 @@
             color: var(--text-color);
             height: 100vh;
             display: flex;
-            flex-direction: column;
-            overflow: hidden; /* 禁止整体页面滚动 */
+            flex-direction: column; /* 垂直布局 */
+            overflow: hidden;
         }
 
-        /* ================== 预览区域 (居中显示) ================== */
+        /* ================== 中间预览区域 (占据剩余空间) ================== */
         .preview-container {
-            flex: 1;
+            flex: 1; /* 自动撑满剩余高度 */
             width: 100%;
-            overflow: auto; /* 允许内容滚动 */
+            overflow: auto; /* 内容溢出时滚动 */
             display: flex;
+            /* 关键：使用 flex 配合 margin: auto 实现内容少时居中，内容多时可滚动 */
             flex-direction: column;
             padding: 20px;
-            /* 点击空白处也可以重新聚焦输入框（通过JS辅助，可选） */
         }
 
         #preview-text {
-            margin: auto; /* Flex 布局下的居中神器 */
-            text-align: center;
-            line-height: 1.2;
+            margin: auto; /* 上下左右自动居中 */
+            text-align: center; /* 文本内部居中 */
+            line-height: 1.1;
             word-break: break-all;
             white-space: pre-wrap;
-            
-            /* 
-               核心优先级逻辑：
-               先找 F0-F3，再找 P1-P4。
-               如果都找不到，回退到 sans-serif
+            
+            /* 
+               核心搜索机制：
+               1. 依次查找 P1, P2, P3, P4
+               2. 如果都没找到，最后回退到 P1 (CustomP1)
             */
-            font-family: 
-                'PriorityF0', 'PriorityF1', 'PriorityF2', 'PriorityF3',
-                'CustomP1', 'CustomP2', 'CustomP3', 'CustomP4', 
-                sans-serif;
-            
-            transition: font-size 0.05s ease;
+            font-family: 'CustomP1', 'CustomP2', 'CustomP3', 'CustomP4', 'CustomP1';
+            
+            transition: font-size 0.05s ease; /* 调整大小时平滑过渡 */
         }
 
-        /* ================== 底部操作面板 ================== */
+        /* ================== 底部操作面板 (固定在底部) ================== */
         .bottom-panel {
-            flex-shrink: 0; 
+            flex-shrink: 0; /* 防止被压缩 */
             background: var(--panel-bg);
-            /* 添加一根细线区分纯白背景和面板 */
-            border-top: 1px solid var(--border-color);
-            padding: 15px 20px;
-            padding-bottom: calc(15px + env(safe-area-inset-bottom));
+            border-top: 1px solid #d1d1d6;
+            padding: 15px;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* 适配 iPhone 底部黑条 */
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
             z-index: 100;
         }
 
-        /* 字号控制行 */
+        /* 控制栏：滑动条和数字 */
         .controls-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
-            gap: 12px;
+            gap: 10px;
         }
 
         .label-text {
             font-size: 14px;
-            color: #666;
-            font-weight: 500;
+            color: #8e8e93;
             white-space: nowrap;
         }
 
         input[type="range"] {
             flex: 1;
-            height: 24px;
-            cursor: pointer;
+            height: 24px; /* 增加触摸区域 */
         }
 
         input[type="number"] {
-            width: 65px;
+            width: 60px;
             padding: 6px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #c6c6c8;
             border-radius: 6px;
             text-align: center;
             font-size: 16px;
-            background: #f9f9f9;
-            color: #333;
+            background: #f2f2f7;
         }
 
-        /* 文本输入框样式 */
+        /* 输入框区域 */
+        .input-wrapper {
+            position: relative;
+        }
+
         textarea {
             width: 100%;
-            height: 70px;
-            padding: 12px;
-            font-size: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: #fcfcfc;
-            resize: none;
+            height: 60px; /* 默认高度 */
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #c6c6c8;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            resize: none; /* 禁止手动拉伸，保持美观 */
             outline: none;
             font-family: inherit;
-            color: #333;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
         }
 
         textarea:focus {
             border-color: var(--accent-color);
             background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
         }
 
-        /* 占位提示样式 */
+        /* 简单的占位提示 */
         .placeholder-tip {
-            color: #ccc;
-            font-family: -apple-system, sans-serif !important; /* 提示语强制用系统字体 */
-            font-size: 20px !important;
-            font-weight: normal;
+            color: #aaa;
+            font-size: 24px !important;
+            font-family: sans-serif !important; /* 提示语使用系统字体 */
         }
 
     </style>
 </head>
 <body>
 
-    <!-- 预览区域 -->
+    <!-- 1. 预览区域 (居中显示) -->
     <div class="preview-container">
-        <div id="preview-text" class="placeholder-tip">输入文字查看效果...</div>
+        <div id="preview-text" class="placeholder-tip">请在底部输入文字...</div>
     </div>
 
-    <!-- 底部面板 -->
+    <!-- 2. 底部控制面板 -->
     <div class="bottom-panel">
-        
-        <!-- 滑块和数字 -->
+        
+        <!-- 字号控制 -->
         <div class="controls-row">
             <span class="label-text">字号</span>
-            <!-- max=500 允许非常大的字号 -->
-            <input type="range" id="size-slider" min="10" max="500" value="80">
+            <!-- max 设置很大，满足无限制需求 -->
+            <input type="range" id="size-slider" min="10" max="400" value="80">
             <input type="number" id="size-number" value="80" min="1">
         </div>
 
-        <!-- 输入框 -->
-        <textarea id="text-input" placeholder="输入内容 (优先级: fonts0-3 > P1-4)"></textarea>
+        <!-- 文本输入 -->
+        <div class="input-wrapper">
+            <textarea id="text-input" placeholder="输入字符以查看 P1-P4 字体效果"></textarea>
+        </div>
     </div>
 
     <script>
@@ -176,46 +164,46 @@
         const sizeSlider = document.getElementById('size-slider');
         const sizeNumber = document.getElementById('size-number');
 
+        // 默认字号
         let currentSize = 80;
 
-        // 同步字号函数
+        // 更新字号函数
         function setSize(size) {
-            const val = parseInt(size);
-            if (!isNaN(val)) {
-                currentSize = val;
-                previewText.style.fontSize = currentSize + 'px';
-                sizeSlider.value = currentSize;
-                sizeNumber.value = currentSize;
-            }
+            currentSize = parseInt(size) || 10;
+            previewText.style.fontSize = currentSize + 'px';
+            sizeSlider.value = currentSize;
+            sizeNumber.value = currentSize;
         }
 
         // 监听滑块
         sizeSlider.addEventListener('input', (e) => setSize(e.target.value));
 
-        // 监听数字输入
+        // 监听数字框
         sizeNumber.addEventListener('input', (e) => setSize(e.target.value));
 
         // 监听文本输入
         textInput.addEventListener('input', (e) => {
             const val = e.target.value;
-            
+            
             if (val.length > 0) {
+                // 有内容时
                 previewText.innerText = val;
                 previewText.classList.remove('placeholder-tip');
+                // 恢复当前设定的字号
                 previewText.style.fontSize = currentSize + 'px';
                 previewText.style.color = '#000';
             } else {
-                previewText.innerText = '输入文字查看效果...';
+                // 内容清空时显示提示
+                previewText.innerText = '请在底部输入文字...';
                 previewText.classList.add('placeholder-tip');
-                previewText.style.fontSize = '20px'; // 提示语大小固定
-                previewText.style.color = '#ccc';
+                previewText.style.fontSize = '24px'; // 提示语固定大小
+                previewText.style.color = '#aaa';
             }
         });
 
-        // 初始化
+        // 初始化一次字号
         setSize(80);
 
     </script>
 </body>
 </html>
-
